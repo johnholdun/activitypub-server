@@ -12,6 +12,7 @@ class Service
   end
 
   def self.attribute(name)
+    (@attributes ||= []).push(name)
     define_method(name) { @args[name] }
   end
 end
