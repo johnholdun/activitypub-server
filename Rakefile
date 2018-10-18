@@ -8,34 +8,34 @@ TASKS =
       klass: AccountCreator,
       namespace: 'accounts',
       task: 'create',
-      description: 'TODO',
+      description: 'Create a new local account',
       args: [
         {
           name: :username,
           flag: 'username',
           short_flag: 'u',
-          description: 'TODO',
+          description: 'The username. All lowercase, no spaces.',
           klass: String
         },
         {
           name: :display_name,
           flag: 'display-name',
           short_flag: 'n',
-          description: 'TODO',
+          description: 'The display name. Optional.',
           klass: String
         },
         {
           name: :summary,
           flag: 'summary',
           short_flag: 's',
-          description: 'TODO',
+          description: 'The summary, or bio—a short description of the account. Optional. Some clients allow some HTML here.',
           klass: String
         },
         {
           name: :icon_url,
           flag: 'icon-url',
           short_flag: 'i',
-          description: 'TODO',
+          description: 'The URL of the icon, or avatar, of the account.',
           klass: String
         }
       ]
@@ -44,20 +44,20 @@ TASKS =
       klass: FavoriteCreator,
       namespace: 'favorites',
       task: 'create',
-      description: 'TODO',
+      description: 'Fav (or Like) a status on behalf of an account.',
       args: [
         {
           name: :account_uri,
           flag: 'account-uri',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account performing the Favorite. Must be local.',
           klass: String
         },
         {
           name: :status_uri,
           flag: 'status-uri',
           short_flag: 's',
-          description: 'TODO',
+          description: 'The URI of the status to be favorited.',
           klass: String
         }
       ]
@@ -66,20 +66,20 @@ TASKS =
       klass: FavoriteDeleter,
       namespace: 'favorites',
       task: 'delete',
-      description: 'TODO',
+      description: 'Un-fave a status on behalf of an account.',
       args: [
         {
           name: :account_uri,
           flag: 'account-uri',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account to remove the Favorite. Must be local.',
           klass: String
         },
         {
           name: :status_uri,
           flag: 'status-uri',
           short_flag: 's',
-          description: 'TODO',
+          description: 'The URI of the favorited status to be unfavorited.',
           klass: String
         }
       ]
@@ -88,20 +88,20 @@ TASKS =
       klass: FollowCreator,
       namespace: 'follows',
       task: 'create',
-      description: 'TODO',
+      description: 'Follow an account!',
       args: [
         {
           name: :account_id,
           flag: 'account-id',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account performing the Follow. Must be local.',
           klass: String
         },
         {
           name: :target_account_id,
           flag: 'target-account-id',
           short_flag: 't',
-          description: 'TODO',
+          description: 'The URI of the account to be followed.',
           klass: String
         }
       ]
@@ -110,20 +110,20 @@ TASKS =
       klass: FollowDeleter,
       namespace: 'follows',
       task: 'delete',
-      description: 'TODO',
+      description: 'Unfollow an account!',
       args: [
         {
           name: :account_id,
           flag: 'account-id',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account performing the Unfollow. Must be local.',
           klass: String
         },
         {
           name: :target_account_id,
           flag: 'target-account-id',
           short_flag: 't',
-          description: 'TODO',
+          description: 'The URI of the account to be unfollowed.',
           klass: String
         }
       ]
@@ -132,20 +132,20 @@ TASKS =
       klass: ReblogCreator,
       namespace: 'reblogs',
       task: 'create',
-      description: 'TODO',
+      description: 'Reblog (or Retweet or Boost) a status on behalf of an account.',
       args: [
         {
           name: :account_uri,
           flag: 'account-uri',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account performing the Reblog. Must be local.',
           klass: String
         },
         {
           name: :status_uri,
           flag: 'status-uri',
           short_flag: 's',
-          description: 'TODO',
+          description: 'The URI of the status to be reblogged.',
           klass: String
         }
       ]
@@ -154,20 +154,20 @@ TASKS =
       klass: ReblogDeleter,
       namespace: 'reblogs',
       task: 'delete',
-      description: 'TODO',
+      description: 'Remove a reblog on behalf of an account.',
       args: [
         {
           name: :account_uri,
           flag: 'account-uri',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account removing the Reblog. Must be local.',
           klass: String
         },
         {
           name: :status_uri,
           flag: 'status-uri',
           short_flag: 's',
-          description: 'TODO',
+          description: 'The URI of the status to be un-reblogged.',
           klass: String
         }
       ]
@@ -176,41 +176,41 @@ TASKS =
       klass: StatusCreator,
       namespace: 'statuses',
       task: 'create',
-      description: 'TODO',
+      description: 'Create a status AKA toot!',
       args: [
         {
           name: :account_id,
           flag: 'account-id',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account posting the status. Must be local.',
           klass: String
         },
         {
           name: :text,
           flag: 'text',
           short_flag: 't',
-          description: 'TODO',
+          description: 'The body of the status. Some clients allow some HTML.',
           klass: String
         },
         {
           name: :in_reply_to,
           flag: 'in-reply-to',
           short_flag: 'i',
-          description: 'TODO',
+          description: 'If this is a reply, the URI of the original status.',
           klass: String
         },
         {
           name: :sensitive,
           flag: 'sensitive',
           short_flag: 's',
-          description: 'TODO',
+          description: 'A flag indicating that this post is sensitive. Defaults to false.',
           klass: FalseClass
         },
         {
           name: :summary,
           flag: 'summary',
           short_flag: 's',
-          description: 'TODO',
+          description: 'The summary AKA spoiler AKA content warning. Optional.',
           klass: String
         }
       ]
@@ -219,20 +219,20 @@ TASKS =
       klass: StatusDeleter,
       namespace: 'statuses',
       task: 'delete',
-      description: 'TODO',
+      description: 'Delete a status!',
       args: [
         {
           name: :account_uri,
           flag: 'account-uri',
           short_flag: 'a',
-          description: 'TODO',
+          description: 'The URI of the account that posted the status. Must be local.',
           klass: String
         },
         {
           name: :status_uri,
           flag: 'status-uri',
           short_flag: 's',
-          description: 'TODO',
+          description: 'The URI of the status to delete.',
           klass: String
         }
       ]
@@ -251,7 +251,7 @@ TASKS.map { |t| t[:namespace] }.uniq.each do |tasks_namespace|
           task_opts[:args].each do |task_arg|
             opts.on(
               "-#{task_arg[:short_flag]}",
-              "--#{task_arg[:flag]} {task_arg[:flag]}",
+              "--#{task_arg[:flag]} #{task_arg[:flag]}",
               task_arg[:description],
               task_arg[:klass]
             ) do |value|
