@@ -5,7 +5,6 @@ class DestroyReblogRoute < Route
 
     request.body.rewind
     body = request.body.read.force_encoding('UTF-8')
-    puts "hello #{body.inspect}"
     json = Oj.load(body, mode: :strict)
     status_uri = json['statusUri']
 

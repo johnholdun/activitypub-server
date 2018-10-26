@@ -5,7 +5,6 @@ class CreateStatusRoute < Route
 
     request.body.rewind
     body = request.body.read.force_encoding('UTF-8')
-    puts "hello #{body.inspect}"
     json = Oj.load(body, mode: :strict)
     text = json['text']
     in_reply_to = json['inReplyTo']
