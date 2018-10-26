@@ -1,7 +1,7 @@
 require './lib/service'
 
 class StatusDeleter < Service
-  attribute :account_uri
+  attribute :account_id
   attribute :status_uri
 
   def call
@@ -12,6 +12,7 @@ class StatusDeleter < Service
 
     raise 'invalid account' unless account
     raise 'invalid status' unless status
+    puts "lmao #{status['attributedTo']} #{account['id']}"
     raise 'wrong author' unless status['attributedTo'] == account['id']
 
     mentions = status['tag'].map { |t| FetchAccount.call(t['href']) }

@@ -15,6 +15,11 @@ class Storage
     @last_write = Time.now.to_i
   end
 
+  def list(type, options = {})
+    raise ArgumentError, 'unexpected type' unless @data[type.to_s].is_a?(Hash)
+    return @data[type.to_s].values
+  end
+
   def read(type, id = nil)
     if id
       @data.dig(type.to_s, id.to_s)

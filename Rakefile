@@ -222,8 +222,8 @@ TASKS =
       description: 'Delete a status!',
       args: [
         {
-          name: :account_uri,
-          flag: 'account-uri',
+          name: :account_id,
+          flag: 'account-id',
           short_flag: 'a',
           description: 'The URI of the account that posted the status. Must be local.',
           klass: String

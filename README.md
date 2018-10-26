@@ -48,6 +48,24 @@ Run any of these with the `--help` flag to see the options it accepts:
 rake favorites:create -- --help
 ```
 
+## To Do
+
+### Static content
+
+An ActivityPub server is generally more read-heavy than write-heavy. To make this app as performant as possible, I want most GET requests to return static data (i.e. pre-generated JSON files). The biggest piece of work here involves creating slices of feeds that are suitable for pagination.
+
+### Authentication
+
+The API endpoints are all hard-coded for a local user named `john`. Authentication is out of scope for this project, but maybe adopting [IndieLogin](https://indielogin.com/) makes sense.
+
+### Receive incoming items and add to queue
+
+This already works, but the naïve `data.json` approach is not scalable. The inbox URL should quickly and generously accept all incoming items to an append-only queue, which is then parsed asynchronously by a separate process.
+
+### Miscellaneous
+
+- Add "received at" metadata to incoming items
+
 ## Acknowledgements
 
 This codebase started as a fork of [Mastodon](https://github.com/tootsuite/mastodon/), which I stripped away line by line to learn how the ActivityPub spec works in practice. Thanks to Eugen and everyone else that has worked on that project!

@@ -12,7 +12,17 @@ class ActivityPub < Sinatra::Application
       [:get, '/users/:username/following/?', FollowingRoute],
       [:get, '/users/:username/collections/:id/?', CollectionRoute],
       [:get, '/users/:username/statuses/:id/?', StatusRoute],
-      [:get, '/search', SearchRoute]
+      [:get, '/search', SearchRoute],
+
+      [:get, '/api/v1/items', ReadItemsRoute],
+      [:post, '/api/v1/follows', CreateFollowRoute],
+      [:delete, '/api/v1/follows', DestroyFollowRoute],
+      [:post, '/api/v1/favorites', CreateFavoriteRoute],
+      [:delete, '/api/v1/favorites', DestroyFavoriteRoute],
+      [:post, '/api/v1/reblogs', CreateReblogRoute],
+      [:delete, '/api/v1/reblogs', DestroyReblogRoute],
+      [:post, '/api/v1/statuses', CreateStatusRoute],
+      [:delete, '/api/v1/statuses', DestroyStatusRoute]
     ]
 
   @my_routes.each do |meth, path, klass|
