@@ -7,7 +7,7 @@ Dir.glob('./routes/*.rb').each { |f| require(f) }
 
 USE_HTTPS = true
 
-LOCAL_DOMAIN = 'johnholdun2.localtunnel.me'.freeze
+LOCAL_DOMAIN = 'johnholdun.localtunnel.me'.freeze
 
 BASE_URL = "http#{'s' if USE_HTTPS}://#{LOCAL_DOMAIN}"
 

@@ -48,6 +48,20 @@ Run any of these with the `--help` flag to see the options it accepts:
 rake favorites:create -- --help
 ```
 
+## The Queue
+
+The inbox flow for this project is designed to be minimally process-intensive. Any request to an inbox URL will be accepted and written to the `inbox` directory without being parsed. A second process will parse these items one at a time, in the order they were received, saving statuses, accepting follows, and dispatching notifications as appropriate. You can run the parser like so:
+
+```
+ruby -e "require './environment'; ParseInboxItem.call"
+```
+
+This command will parse the oldest inbox item, delete the file, and exit. If there is a problem parsing the file, it will be moved to the `inbox-errors` with error data appended. There's no built-in mechanism for running this parser continuously yet, but a frequent cron job might do the trick.
+
+## API
+
+There is an API for reading timelines and notifications and creating and deleting statuses, likes, and reblogs. It doesn't have authentication yet.
+
 ## To Do
 
 ### Static content
@@ -57,14 +71,6 @@ An ActivityPub server is generally more read-heavy than write-heavy. To make thi
 ### Authentication
 
 The API endpoints are all hard-coded for a local user named `john`. Authentication is out of scope for this project, but maybe adopting [IndieLogin](https://indielogin.com/) makes sense.
-
-### Receive incoming items and add to queue
-
-This already works, but the naïve `data.json` approach is not scalable. The inbox URL should quickly and generously accept all incoming items to an append-only queue, which is then parsed asynchronously by a separate process.
-
-### Miscellaneous
-
-- Add "received at" metadata to incoming items
 
 ## Acknowledgements
 

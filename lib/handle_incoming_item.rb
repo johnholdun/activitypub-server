@@ -4,9 +4,10 @@ class HandleIncomingItem
     'Like' => :favorites
   }
 
-  def initialize(account_id, item_id)
-    @account_id = account_id
-    @item_id = item_id
+  def initialize(account, item, received_at)
+    @account = account
+    @item = item
+    @received_at = received_at
   end
 
   def call
@@ -17,16 +18,18 @@ class HandleIncomingItem
           STORAGE.append(:followers, account['id'], item['actor'])
           # Make sure we have a local copy of this person
           FetchAccount.call(item['actor'])
-          FollowAccepter.call(account_id: account['id'], item_id: item['id'])
+          FollowAccepter.call(account_id: account['id'], item: item)
+          save_notification('follows')
         end
       when 'Like'
         status = STORAGE.read(:statuses, item['object'])
         if status && status['attributedTo'] == account['id']
-          STORAGE.append(:favorites, status['id'], item['actor'])
+          save_notification('likes')
         end
       when 'Accept'
         if item['object']['type'] == 'Follow' && item['object']['actor'] == account['id']
           STORAGE.append(:following, account['id'], item['object']['object'])
+          save_notification('follow-accepts')
         end
       when 'Undo'
         case item['object']['type']
@@ -36,13 +39,37 @@ class HandleIncomingItem
               TABLES[item['object']['type']],
               account['id'],
               item['object']['actor']
+            save_notification('unfollows')
           end
         when 'Like'
           status = STORAGE.read(:statuses, item['object'])
           if status && status['attributedTo'] == account['id']
-            STORAGE.remove(:favorites, status['id'], item['actor'])
+            save_notification('unlikes')
+          end
+        when 'Announce'
+          # TODO: we're not capturing this, check that the object is as expected
+          status = STORAGE.read(:statuses, item['object'])
+          if status && status['attributedTo'] == account['id']
+            save_notification('unreblogs')
           end
         end
+      when 'Create'
+        if item['object'].is_a?(Hash) && item['object']['type'] == 'Note' && item['object']['attributedTo'] == item['actor']
+          STORAGE.write(:statuses, item['object']['id'], item['object'])
+        else
+          puts "create? idk!\n#{JSON.pretty_generate(item)}"
+          raise 'unexpected create thing'
+        end
+      when 'Announce'
+        status = STORAGE.read(:statuses, item['object'])
+        if status && status['attributedTo'] == account['id']
+          save_notification('reblogs')
+        else
+          # TODO: this is a reblog of someone else; add it to the timeline
+        end
+      else
+        puts "idk!\n#{JSON.pretty_generate(item)}"
+          raise 'unexpected thing'
       end
 
     puts "Handled incoming item\n#{account['id']}\n#{item['id']}\n#{result.inspect}"
@@ -54,13 +81,14 @@ class HandleIncomingItem
 
   private
 
-  attr_reader :account_id, :item_id
+  attr_reader :account, :item, :received_at
 
-  def account
-    @account ||= STORAGE.read(:accounts, account_id)
-  end
-
-  def item
-    @item ||= STORAGE.read(:incomingItems, item_id)
+  def save_notification(type)
+    STORAGE.append \
+      :notifications,
+      account['id'],
+      type: type,
+      item: item.reject { |k, _| %w(@context signature).include?(k) },
+      received_at: received_at
   end
 end

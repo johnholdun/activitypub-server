@@ -14,7 +14,8 @@ class ActivityPub < Sinatra::Application
       [:get, '/users/:username/statuses/:id/?', StatusRoute],
       [:get, '/search', SearchRoute],
 
-      [:get, '/api/v1/items', ReadItemsRoute],
+      [:get, '/api/v1/statuses', ReadStatusesRoute],
+      [:get, '/api/v1/notifications', ReadNotificationsRoute],
       [:post, '/api/v1/follows', CreateFollowRoute],
       [:delete, '/api/v1/follows', DestroyFollowRoute],
       [:post, '/api/v1/favorites', CreateFavoriteRoute],

@@ -5,7 +5,7 @@ class ReblogDeleter < Service
   attribute :status_uri
 
   def call
-    # TODO: don't delete favorite if it doesn't exist
+    # TODO: don't delete reblog if it doesn't exist
     # TODO: remove from local timeline
 
     account = STORAGE.read(:accounts, account_uri)
