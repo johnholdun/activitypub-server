@@ -2,21 +2,16 @@ class WebfingerRoute < Route
   def call
     resource = request.params['resource']
 
-    username_from_resource =
+    @account =
       case resource
       when /\A#{BASE_URL}/i
-        # TODO: find account by this URL as ID
+        FetchAccount.call(resource)
       when /\@/
         username, domain = resource.gsub(/\Aacct:/, '').split('@', 2)
-        if domain.gsub(/[\/]/, '').casecmp(LOCAL_DOMAIN).zero?
-          username
+        if domain.gsub(/\//, '').casecmp(LOCAL_DOMAIN).zero?
+          FetchAccount.call("#{BASE_URL}/users/#{username}")
         end
       end
-
-    return not_found unless username_from_resource
-
-    @account =
-      FetchAccount.call("#{BASE_URL}/users/#{username_from_resource}")
 
     return not_found unless @account
 
