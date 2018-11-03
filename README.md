@@ -56,7 +56,7 @@ The inbox flow for this project is designed to be minimally process-intensive. A
 ruby -e "require './environment'; ParseInboxItem.call"
 ```
 
-This command will parse the oldest inbox item, delete the file, and exit. If there is a problem parsing the file, it will be moved to the `inbox-errors` with error data appended. There's no built-in mechanism for running this parser continuously yet, but a frequent cron job might do the trick.
+This command will parse the oldest inbox item, delete the file, and exit. If there is a problem parsing the file, it will be moved to the `inbox-errors` directory with error data appended. There's no built-in mechanism for running this parser continuously yet, but a frequent cron job might do the trick. You might also want to run this task in a batch; it will return silently if there is nothing new to parse.
 
 ## API
 

@@ -52,6 +52,8 @@ class ParseInboxItem
       return unless account
     end
 
+    STORAGE.append(:inbox, inbox_account['id'], json)
+
     items =
       case json['type']
       when 'Collection', 'CollectionPage'

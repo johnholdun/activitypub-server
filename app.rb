@@ -1,29 +1,110 @@
 require 'sinatra/base'
 
 class ActivityPub < Sinatra::Application
+  CORE_TYPES =
+    %w(
+      Object
+      Link
+      Activity
+      IntransitiveActivity
+      Collection
+      OrderedCollection
+      CollectionPage
+      OrderedCollectionPage
+    )
+
+  ACTIVITY_TYPES =
+    %w(
+      Accept
+      Add
+      Announce
+      Arrive
+      Block
+      Create
+      Delete
+      Dislike
+      Flag
+      Follow
+      Ignore
+      Invite
+      Join
+      Leave
+      Like
+      Listen
+      Move
+      Offer
+      Question
+      Reject
+      Read
+      Remove
+      TentativeReject
+      TentativeAccept
+      Travel
+      Undo
+      Update
+      View
+    ).freeze
+
+  ACTOR_TYPES =
+    %w(
+      Application
+      Group
+      Organization
+      Person
+      Service
+    ).freeze
+
+  OBJECT_TYPES =
+    %w(
+      Article
+      Audio
+      Document
+      Event
+      Image
+      Note
+      Page
+      Place
+      Profile
+      Relationship
+      Tombstone
+      Video
+    ).freeze
+
+  LINK_TYPES = %w(Mention).freeze
+
+  TYPES =
+    (
+      CORE_TYPES &
+      ACTIVITY_TYPES &
+      ACTOR_TYPES &
+      OBJECT_TYPES &
+      LINK_TYPES
+    ).freeze
+
   @my_routes =
     [
       [:get, '/.well-known/host-meta/?', HostMetaRoute],
       [:get, '/.well-known/webfinger/?', WebfingerRoute],
+
       [:get, '/users/:username/outbox/?', OutboxRoute],
+      [:post, '/users/:username/outbox/?', CreateOutboxRoute],
+
+      [:get, '/users/:username/inbox/?', ReadInboxRoute],
       [:post, '/users/:username/inbox/?', InboxRoute],
+
       [:get, '/users/:username/?', AccountRoute],
+
       [:get, '/users/:username/followers/?', FollowersRoute],
       [:get, '/users/:username/following/?', FollowingRoute],
       [:get, '/users/:username/collections/:id/?', CollectionRoute],
-      [:get, '/users/:username/statuses/:id/?', StatusRoute],
-      [:get, '/search', SearchRoute],
 
-      [:get, '/api/v1/statuses', ReadStatusesRoute],
-      [:get, '/api/v1/notifications', ReadNotificationsRoute],
-      [:post, '/api/v1/follows', CreateFollowRoute],
-      [:delete, '/api/v1/follows', DestroyFollowRoute],
-      [:post, '/api/v1/favorites', CreateFavoriteRoute],
-      [:delete, '/api/v1/favorites', DestroyFavoriteRoute],
-      [:post, '/api/v1/reblogs', CreateReblogRoute],
-      [:delete, '/api/v1/reblogs', DestroyReblogRoute],
-      [:post, '/api/v1/statuses', CreateStatusRoute],
-      [:delete, '/api/v1/statuses', DestroyStatusRoute]
+      # TODO: Replace with ReadObjectRoute?
+      [:get, '/users/:username/statuses/:id/?', StatusRoute],
+
+      [:get, '/users/:username/activities/:id/?', ReadActivityRoute],
+
+      # TODO: More specific types in URL?
+      [:get, '/users/:username/objects/:id/?', ReadObjectRoute],
     ]
 
   @my_routes.each do |meth, path, klass|
