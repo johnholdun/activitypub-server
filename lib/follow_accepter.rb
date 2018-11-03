@@ -2,11 +2,11 @@ require './lib/service'
 
 class FollowAccepter < Service
   attribute :account_id
-  attribute :item
+  attribute :activity
 
   def call
     account = STORAGE.read(:accounts, account_id)
-    follower = STORAGE.read(:accounts, item['actor'])
+    follower = STORAGE.read(:accounts, activity['actor'])
 
     Deliverer.call \
       account,
@@ -14,6 +14,6 @@ class FollowAccepter < Service
       id: nil,
       type: 'Accept',
       actor: account['id'],
-      object: item
+      object: activity
   end
 end

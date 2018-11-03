@@ -63,9 +63,9 @@ class OutboxRoute < Route
   def all_statuses
     @all_statuses ||=
       STORAGE
-        .read(:statuses)
+        .read(:activities)
         .values
-        .select { |s| s['attributedTo'] == @account['id'] }
+        .select { |s| s['actor'] == @account['id'] }
   end
 
   def fetch_statuses

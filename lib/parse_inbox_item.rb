@@ -2,10 +2,9 @@ class ParseInboxItem
   include JsonLdHelper
 
   def call
-    filename = Dir.glob('inbox/*.json').first
-    raise 'no items' unless filename
-    @timestamp = File.basename(filename).split('.').first.to_i
-    @payload = Oj.load(File.read(filename), mode: :strict)
+    key = STORAGE.read(:unverifiedInbox).keys.first
+    raise 'no items' unless key
+    @payload = STORAGE.read(:unverifiedInbox, key)
 
     inbox_account =
       FetchAccount.call("#{BASE_URL}/users/#{payload['username']}")
@@ -17,13 +16,17 @@ class ParseInboxItem
       payload['body'],
       signed_request_account
   rescue => error
-    return unless filename
+    unless key
+      puts 'no items in queue'
+      return
+    end
 
-    File.write \
-      "inbox-errors/#{File.basename(filename)}",
+    STORAGE.write \
+      :inboxErrors,
+      key,
       payload.merge(error: error).to_json
   ensure
-    FileUtils.rm(filename) if filename
+    STORAGE.delete(:unverifiedInbox, key)
   end
 
   def self.call
@@ -32,7 +35,7 @@ class ParseInboxItem
 
   private
 
-  attr_reader :payload, :timestamp
+  attr_reader :payload
 
   def process(inbox_account, body, account)
     json = Oj.load(body, mode: :strict)
@@ -52,7 +55,22 @@ class ParseInboxItem
       return unless account
     end
 
-    STORAGE.append(:inbox, inbox_account['id'], json)
+    object = json['object']
+    if object.is_a?(String)
+      # TODO: Fetch object at this URI for local storage
+    else
+      # TODO: Verify that this object is real
+      # TODO: Be careful about intended audience for this object?
+      STORAGE.write(:objects, object['id'], object)
+      json['object'] = object['id']
+    end
+
+    # TODO: Write activities to a separate table, and inbox just links
+    # recipients to activities
+    STORAGE.append \
+      :inbox,
+      inbox_account['id'],
+      json.reject { |k, _| %w(@context signature).include?(k) }
 
     items =
       case json['type']
@@ -65,7 +83,7 @@ class ParseInboxItem
       end
 
     items.reverse_each do |item|
-      HandleIncomingItem.call(inbox_account, item, timestamp)
+      HandleIncomingItem.call(inbox_account, item, object)
     end
   rescue Oj::ParseError
     nil

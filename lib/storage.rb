@@ -26,6 +26,13 @@ class Storage
     persist! if ready_to_persist?
   end
 
+  def delete(type, id)
+    load!
+    raise ArgumentError, 'unexpected type' unless @data[type.to_s].is_a?(Hash)
+    @data[type.to_s].delete(id.to_s)
+    persist! if ready_to_persist?
+  end
+
   def append(type, id, item)
     load!
     raise ArgumentError, 'unexpected type' unless @data[type.to_s].is_a?(Hash)

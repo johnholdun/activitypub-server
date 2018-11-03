@@ -24,6 +24,7 @@ class ReadInboxRoute < Route
           account_inbox_url(page: true, min_id: activities.first['id'])
         end
 
+      # TODO: Use cursors instead of IDs
       id_url_params =
         {
           page: true,

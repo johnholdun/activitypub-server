@@ -38,36 +38,40 @@ class CreateOutboxRoute < Route
       object['id'] = "#{account['id']}/objects/TODO-#{object['type']}-#{timestamp}"
     end
 
-    STORAGE.write(:activities, activity['id'], activity)
     # TODO: fetch object if not owned by this origin
     if object.is_a?(Hash)
       # TODO: handle updates as partial rewrites, including null values (which
       # remove key)
       STORAGE.write(:objects, object['id'], object)
+      activity['object'] = object['id']
     end
+
+    STORAGE.write(:activities, activity['id'], activity)
 
     headers['Location'] = activity['id']
     return finish(nil, 201)
 
-    begin
-      StatusCreator.call \
-        account_id: account_id,
-        text: text,
-        in_reply_to: in_reply_to,
-        sensitive: sensitive,
-        summary: summary
+    # TODO: Handle deliveries asynchronously
 
-      finish_json \
-        data: {
-          type: 'statuses',
-          accountId: account_id,
-          text: text,
-          inReplyTo: in_reply_to,
-          sensitive: sensitive,
-          summary: summary,
-        }
-    rescue => e
-      finish_json(errors: [e.to_s], status: 500)
-    end
+    # begin
+    #   StatusCreator.call \
+    #     account_id: account_id,
+    #     text: text,
+    #     in_reply_to: in_reply_to,
+    #     sensitive: sensitive,
+    #     summary: summary
+
+    #   finish_json \
+    #     data: {
+    #       type: 'statuses',
+    #       accountId: account_id,
+    #       text: text,
+    #       inReplyTo: in_reply_to,
+    #       sensitive: sensitive,
+    #       summary: summary,
+    #     }
+    # rescue => e
+    #   finish_json(errors: [e.to_s], status: 500)
+    # end
   end
 end

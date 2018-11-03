@@ -6,15 +6,16 @@ class InboxRoute < Route
 
     # All we're doing here is capturing this request to be parsed later by
     # {ParseInboxItem}
-    File.write \
-      "inbox/#{(Time.now.to_f * 1000).to_i}.#{(rand * 8999 + 1000).to_i}.json",
+    STORAGE.write \
+      :unverifiedInbox,
+      "#{(Time.now.to_f * 1000).to_i}.#{(rand * 8999 + 1000).to_i}",
       {
         body: request.body.read.force_encoding('UTF-8'),
         headers: request['headers'],
         path: request.path,
         request_method: request.request_method.downcase,
         username: request.params['username']
-      }.to_json
+      }
 
     202
   end
