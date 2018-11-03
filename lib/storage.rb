@@ -4,23 +4,14 @@ class Storage
     load!
   end
 
-  def load!
-    @data = Oj.load(File.read(@path))
-    @last_write = Time.now.to_i
-  end
-
-  def persist!
-    # TODO: Lock file
-    File.write(@path, Oj.dump(@data, mode: :compat))
-    @last_write = Time.now.to_i
-  end
-
   def list(type, options = {})
+    load!
     raise ArgumentError, 'unexpected type' unless @data[type.to_s].is_a?(Hash)
     return @data[type.to_s].values
   end
 
   def read(type, id = nil)
+    load!
     if id
       @data.dig(type.to_s, id.to_s)
     else
@@ -29,12 +20,14 @@ class Storage
   end
 
   def write(type, id, value)
+    load!
     raise ArgumentError, 'unexpected type' unless @data[type.to_s].is_a?(Hash)
     @data[type.to_s][id.to_s] = value
     persist! if ready_to_persist?
   end
 
   def append(type, id, item)
+    load!
     raise ArgumentError, 'unexpected type' unless @data[type.to_s].is_a?(Hash)
     @data[type.to_s][id.to_s] ||= []
     unless @data[type.to_s][id.to_s].is_a?(Array)
@@ -45,6 +38,7 @@ class Storage
   end
 
   def remove(type, id, item)
+    load!
     raise ArgumentError, 'unexpected type' unless @data[type.to_s].is_a?(Hash)
     @data[type.to_s][id.to_s] ||= []
     unless @data[type.to_s][id.to_s].is_a?(Array)
@@ -55,6 +49,17 @@ class Storage
   end
 
   private
+
+  def load!
+    @data = Oj.load(File.read(@path))
+    @last_write = Time.now.to_i
+  end
+
+  def persist!
+    # TODO: Lock file
+    File.write(@path, Oj.dump(@data, mode: :compat))
+    @last_write = Time.now.to_i
+  end
 
   def ready_to_persist?
     true
