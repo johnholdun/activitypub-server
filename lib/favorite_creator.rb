@@ -6,9 +6,8 @@ class FavoriteCreator < Service
 
   def call
     # TODO: don't create favorite if already faved
-    # TODO: check if status_uri is a reblog
 
-    account = STORAGE.read(:accounts, account_uri)
+    account = Oj.load(DB[:actors].where(id: account_uri).first[:json])
     status = FetchStatus.call(status_uri)
     author = FetchAccount.call(status['attributedTo'])
 

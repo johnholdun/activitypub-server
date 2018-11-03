@@ -264,9 +264,9 @@ TASKS.map { |t| t[:namespace] }.uniq.each do |tasks_namespace|
           result = task_opts[:klass].call(options)
           puts result
           exit
-        rescue => e
-          puts e
-          abort
+        # rescue => e
+        #   puts e
+        #   abort
         end
       end
     end

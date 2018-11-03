@@ -14,23 +14,15 @@ BASE_URL = "http#{'s' if USE_HTTPS}://#{LOCAL_DOMAIN}"
 LD_CONTEXT = {
   '@context': [
     'https://www.w3.org/ns/activitystreams',
-    'https://w3id.org/security/v1',
-    {
-      'manuallyApprovesFollowers' => 'as:manuallyApprovesFollowers',
-      'sensitive' => 'as:sensitive',
-      'movedTo' => { '@id' => 'as:movedTo', '@type' => '@id' },
-      'Hashtag' => 'as:Hashtag',
-      'toot' => 'http://joinmastodon.org/ns#',
-      'focalPoint' => { '@container' => '@list', '@id' => 'toot:focalPoint' },
-      'featured' => { '@id' => 'toot:featured', '@type' => '@id' },
-      'schema' => 'http://schema.org#',
-      'PropertyValue' => 'schema:PropertyValue',
-      'value' => 'schema:value'
-    }
+    'https://w3id.org/security/v1'
   ]
 }.freeze
 
 PUBLIC = 'https://www.w3.org/ns/activitystreams#Public'.freeze
+
+DB = Sequel.connect('sqlite://data.db')
+
+Schema.load!
 
 STORAGE = Storage.new('./data.json')
 

@@ -14,8 +14,7 @@ class FetchAccount
   def call
     account = fetch_saved
     return account if id.start_with?(BASE_URL)
-    fetched_at = STORAGE.read(:accountFetches, id).to_i
-    return account if account && Time.now.to_i - fetched_at <= FRESH_WINDOW
+    return account if account && Time.now.to_i - account[:fetched_at] <= FRESH_WINDOW
     account = fetch_webfinger || fetch_by_id
     return unless account
     save_account(account)
@@ -31,13 +30,24 @@ class FetchAccount
   attr_reader :id
 
   def fetch_saved
-    result = STORAGE.read(:accounts, id)
-    LD_CONTEXT.merge(result) if result
+    result = DB[:actors].where(id: id).first
+    LD_CONTEXT.merge(Oj.load(result[:json])) if result
   end
 
   def save_account(account)
-    STORAGE.write(:accounts, id, account.reject { |k, _| k == '@context' })
-    STORAGE.write(:accountFetches, id, Time.now.to_i)
+    existing = DB[:actors].where(id: id)
+
+    params =
+      {
+        fetched_at: Time.now,
+        json: account.reject { |k, _| k == '@context' }.to_json
+      }
+
+    if existing.count > 0
+      existing.update(params)
+    else
+      DB[:actors].insert(params.merge(id: id))
+    end
   end
 
   def fetch_by_id

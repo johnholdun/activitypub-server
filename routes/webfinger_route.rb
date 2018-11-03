@@ -42,7 +42,8 @@ class WebfingerRoute < Route
   end
 
   def private_key
-    STORAGE.read(:privateKeys, uri)
+    actor = DB[:actors].where(id: uri).first
+    actor[:private_key] if actor
   end
 
   def public_key

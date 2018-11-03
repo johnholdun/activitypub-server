@@ -7,9 +7,11 @@ class FavoriteDeleter < Service
   def call
     # TODO: don't delete favorite if it doesn't exist
 
-    account = STORAGE.read(:accounts, account_uri)
+    account = DB[:actors].where(id: account_uri).first
 
     raise 'invalid account' unless account
+
+    account = Oj.load(account[:json])
 
     status = FetchStatus.call(status_uri)
 

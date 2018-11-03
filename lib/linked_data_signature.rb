@@ -68,7 +68,7 @@ class LinkedDataSignature
     to_be_signed = options_hash + document_hash
 
     keypair =
-      OpenSSL::PKey::RSA.new(STORAGE.read(:privateKeys, creator['id']))
+      OpenSSL::PKey::RSA.new(DB[:actors].where(id: creator['id']).first[:private_key])
 
     signature =
       Base64.strict_encode64 \

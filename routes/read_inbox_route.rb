@@ -12,16 +12,16 @@ class ReadInboxRoute < Route
     headers['Content-Type'] = 'application/activity+json'
 
     if request.params['page'] == 'true'
-      activities = fetch_activities
+      activities = fetch_activities(request.params.symbolize_keys)
 
       next_page =
-        if activities.size == LIMIT
-          account_inbox_url(page: true, max_id: activities.last['id'])
+        if activities.size > LIMIT
+          account_inbox_url(page: true, min_id: activities[-2]['id'])
         end
 
       prev_page =
         unless activities.size == 0
-          account_inbox_url(page: true, min_id: activities.first['id'])
+          account_inbox_url(page: true, max_id: activities.first['id'])
         end
 
       # TODO: Use cursors instead of IDs
@@ -40,7 +40,7 @@ class ReadInboxRoute < Route
           next: next_page,
           prev: prev_page,
           partOf: account_inbox_url,
-          orderedItems: activities
+          orderedItems: items(activities)
     else
       finish_json \
         LD_CONTEXT.merge \
@@ -64,11 +64,28 @@ class ReadInboxRoute < Route
   end
 
   def all_activities
-    @all_activities ||= STORAGE.read(:inbox, @account['id']) || []
+    @all_activities ||= DB[:inbox].where(actor: @account['id']).reverse(:id)
   end
 
-  def fetch_activities
-    # TODO: filter by min_id, max_id, since_id, and limit
-    all_activities.reverse
+  def fetch_activities(params)
+    query = all_activities.limit(LIMIT + 1)
+
+    if params[:min_id]
+      query = query.where { id >= params[:min_id] }
+    elsif params[:max_id]
+      query = query.where { id <= params[:max_id] }
+    end
+
+    query.to_a
+  end
+
+  def items(inbox)
+    ids = inbox.map { |i| i[:activity] }
+
+    DB[:activities]
+      .where(id: ids)
+      .to_a
+      .sort_by { |a| ids.index(a[:id]) }
+      .map { |a| Oj.load(a[:json]) }
   end
 end

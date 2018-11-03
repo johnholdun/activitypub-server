@@ -15,7 +15,7 @@ class Request
 
     if account
       keypair =
-        OpenSSL::PKey::RSA.new(STORAGE.read(:privateKeys, account['id']))
+        OpenSSL::PKey::RSA.new(DB[:actors].where(id: account['id']).first[:private_key])
 
       signature =
         Base64.strict_encode64 \

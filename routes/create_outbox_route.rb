@@ -38,15 +38,34 @@ class CreateOutboxRoute < Route
       object['id'] = "#{account['id']}/objects/TODO-#{object['type']}-#{timestamp}"
     end
 
+    # TODO: Ensure activity has published attribute
+
     # TODO: fetch object if not owned by this origin
     if object.is_a?(Hash)
-      # TODO: handle updates as partial rewrites, including null values (which
-      # remove key)
-      STORAGE.write(:objects, object['id'], object)
+      existing = DB[:objects].where(id: object['id'])
+
+      if existing.count > 0
+        new_json = existing.first[:json].merge(object).reject { |_, v| v.nil? }
+        existing.update(json: new_json.to_json)
+      else
+        DB[:objects].insert \
+          id: object['id'],
+          type: object['type'],
+          published: object['published'],
+          json: object.to_json
+      end
+
       activity['object'] = object['id']
     end
 
-    STORAGE.write(:activities, activity['id'], activity)
+    DB[:activities].insert \
+      id: activity['id'],
+      type: activity['type'],
+      actor: activity['actor'],
+      object: activity['object'],
+      target: activity['target'],
+      published: activity['published'],
+      json: activity.to_json
 
     headers['Location'] = activity['id']
     return finish(nil, 201)

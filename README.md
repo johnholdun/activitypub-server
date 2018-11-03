@@ -24,7 +24,7 @@ The server will start running on port 8080, and you're ready to expose it to the
 There’s a command line script for this:
 
 ```
-rake accounts:create -- --username john --display-name "John Holdun" --summary "Greetings from me!" --icon-url "https://johnholdun.com/images/bookworm-full.png"
+rake accounts:create -- --username john --display-name "John Holdun" --summary "Greetings from me" --icon-url "https://johnholdun.com/images/bookworm-full.png"
 ```
 
 Fill in your own options to create a new account on your server. The icon needs to already exist at the URL you specify; this server does not handle media uploads.

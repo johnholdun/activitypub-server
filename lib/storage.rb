@@ -1,3 +1,4 @@
+# TODO: Replace with SQLite
 class Storage
   def initialize(path)
     @path = path
@@ -63,16 +64,12 @@ class Storage
   end
 
   def persist!
-    # TODO: Lock file
     File.write(@path, Oj.dump(@data, mode: :compat))
     @last_write = Time.now.to_i
   end
 
   def ready_to_persist?
     true
-    # TODO: What if we get a bunch of writes within this window and then the
-    # window passes? Do we schedule a persist for later? How? Should this all
-    # just be Redis?
     # Time.now - @last_write > 10
   end
 end

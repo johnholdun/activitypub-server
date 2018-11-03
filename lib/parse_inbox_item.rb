@@ -61,16 +61,33 @@ class ParseInboxItem
     else
       # TODO: Verify that this object is real
       # TODO: Be careful about intended audience for this object?
-      STORAGE.write(:objects, object['id'], object)
+      existing = DB[:objects].where(id: object['id'])
+
+      if existing.count > 0
+        existing.update(json: object.to_json)
+      else
+        DB[:objects].insert \
+          id: object['id'],
+          type: object['type'],
+          published: object['published'],
+          json: object.to_json
+      end
+
       json['object'] = object['id']
     end
 
-    # TODO: Write activities to a separate table, and inbox just links
-    # recipients to activities
-    STORAGE.append \
-      :inbox,
-      inbox_account['id'],
-      json.reject { |k, _| %w(@context signature).include?(k) }
+    DB[:activities].insert \
+      id: json['id'],
+      type: json['type'],
+      actor: json['actor'],
+      object: json['object'],
+      target: json['target'],
+      published: json['published'],
+      json: json.reject { |k, _| %w(@context signature).include?(k) }.to_json
+
+    DB[:inbox].insert \
+      actor: inbox_account['id'],
+      activity: json['id']
 
     items =
       case json['type']

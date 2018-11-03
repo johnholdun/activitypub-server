@@ -6,16 +6,14 @@ class StatusRoute < Route
     return not_found unless account
 
     status =
-      STORAGE.read \
-        :statuses,
-        "#{account['id']}/statuses/#{request.params['id']}"
+      DB[:objects]
+        .where(id: "#{account['id']}/statuses/#{request.params['id']}")
+        .first
 
     return not_found unless status
 
-    # TODO: Redirect to original if reblog
-
     headers['Content-Type'] = 'application/activity+json'
 
-    finish_json(LD_CONTEXT.merge(status))
+    finish_json(LD_CONTEXT.merge(Oj.load(status[:json])))
   end
 end

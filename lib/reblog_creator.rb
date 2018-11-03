@@ -8,14 +8,15 @@ class ReblogCreator < Service
     # TODO: don't create reblog if exists
     # TODO: add reblog to local storage
 
-    account = STORAGE.read(:accounts, account_uri)
+    account = Oj.load(DB[:actors].where(id: account_uri).first[:json])
     status = FetchStatus.call(status_uri)
     author = FetchAccount.call(status['attributedTo'])
 
     inbox_urls = [(author['endpoints'] || {})['sharedInbox'] || author['inbox']]
     inbox_urls +=
-      STORAGE.read(:followers, account['id']).map do |id|
-        follower = STORAGE.read(:accounts, id)
+      DB[:follows].where(target: account['id']).map(:actor).map do |id|
+        follower = DB[:actors].where(id: id).first
+        follower = Oj.load(follower[:json]) if follower
         (follower['endpoints'] || {})['sharedInbox'] || follower['inbox']
       end
 

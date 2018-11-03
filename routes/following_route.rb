@@ -11,35 +11,42 @@ class FollowingRoute < Route
 
     page = request.params['page'].to_i
 
-    all_following = STORAGE.read(:following, @account['id']) || []
+    following = DB[:follows].where(actor: @account['id'])
+
+    total_following = following.size
 
     if page > 0
-      following = all_following[(page - 1) * PAGE_SIZE, PAGE_SIZE].to_a
-      following_next_page = page + 1 if following.size == PAGE_SIZE
+      following =
+        following
+        .limit(PAGE_SIZE + 1)
+        .offset((page - 1) * PAGE_SIZE)
+        .map(:object)
+
+      following_next_page = page + 1 if following.size > PAGE_SIZE
       following_prev_page = page - 1 if page > 1
 
       finish_json \
         LD_CONTEXT.merge \
-          id: account_followers_url(page),
+          id: account_following_url(page),
           type: 'OrderedCollectionPage',
-          totalItems: all_following.size,
-          next: (account_followers_url(following_next_page) if following_next_page),
-          prev: (account_followers_url(following_prev_page) if following_prev_page),
-          partOf: account_followers_url,
-          items: following
+          totalItems: total_following,
+          next: (account_following_url(following_next_page) if following_next_page),
+          prev: (account_following_url(following_prev_page) if following_prev_page),
+          partOf: account_following_url,
+          items: following[0, PAGE_SIZE]
     else
       finish_json \
         LD_CONTEXT.merge \
-          id: account_followers_url,
+          id: account_following_url,
           type: 'OrderedCollection',
-          totalItems: all_following.size,
-          first: account_followers_url(1)
+          totalItems: total_following,
+          first: account_following_url(1)
     end
   end
 
   private
 
-  def account_followers_url(page = nil)
+  def account_following_url(page = nil)
     path = @account['following']
     page ? "#{path}?page=#{page}" : path
   end

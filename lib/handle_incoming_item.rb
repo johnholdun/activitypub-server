@@ -10,22 +10,22 @@ class HandleIncomingItem
       case activity['type']
       when 'Follow'
         if object == account['id']
-          STORAGE.append(:followers, account['id'], activity['actor'])
+          params = { actor: activity['actor'], object: account['id'] }
+          existing = DB[:follows].where(params)
+          if existing.count.zero?
+            DB[:follows].insert(params.merge(accepted: true))
+          end
           # Make sure we have a local copy of this person
           FetchAccount.call(activity['actor'])
           FollowAccepter.call(account_id: account['id'], activity: activity)
         end
       when 'Accept'
-        # TODO: Make sure we actually sent a follow request to this person
-        if object['type'] == 'Follow' && object['actor'] == account['id']
-          STORAGE.append(:following, account['id'], object['object'])
-        end
+        DB[:follows]
+          .where(actor: account['id'], object: object['actor'])
+          .update(accepted: true)
       when 'Undo'
         if object['type'] == 'Follow' && object['object'] == account['id']
-          STORAGE.remove \
-            :followers,
-            account['id'],
-            object['actor']
+          DB[:follows].where(actor: object['actor'], object: account['id']).delete
         end
       end
 

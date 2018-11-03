@@ -10,7 +10,8 @@ class OutboxRoute < Route
     headers['Content-Type'] = 'application/activity+json'
 
     if request.params['page'] == 'true'
-      statuses = fetch_statuses
+      # TODO: filter by min_id, max_id, since_id, and limit
+      statuses = all_statuses.to_a
 
       next_page =
         if statuses.size == LIMIT
@@ -62,14 +63,6 @@ class OutboxRoute < Route
 
   def all_statuses
     @all_statuses ||=
-      STORAGE
-        .read(:activities)
-        .values
-        .select { |s| s['actor'] == @account['id'] }
-  end
-
-  def fetch_statuses
-    # TODO: filter by min_id, max_id, since_id, and limit
-    all_statuses.sort_by { |s| s['published'] }.reverse
+      DB[:activities].where(actor: @account['id']).reverse(:published)
   end
 end

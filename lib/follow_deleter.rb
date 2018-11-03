@@ -8,9 +8,11 @@ class FollowDeleter < Service
     # TODO: validate uri
     # TODO: ensure existence of follow
 
-    account = STORAGE.read(:accounts, account_id)
+    account = DB[:actors].where(id: account_id).first
 
     raise 'no account' unless account
+
+    account = Oj.load(account)
 
     target = FetchAccount.call(target_account_id)
 

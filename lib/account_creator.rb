@@ -8,7 +8,7 @@ class AccountCreator < Service
   attribute :icon_url
 
   def call
-    raise 'username already exists' if STORAGE.read(:accounts, id)
+    raise 'username already exists' unless DB[:actors].where(id: id).count.zero?
 
     account =
       {
@@ -38,10 +38,13 @@ class AccountCreator < Service
         }
       }
 
-    STORAGE.write(:accounts, id, account)
-    STORAGE.write(:privateKeys, id, private_key)
+    DB[:actors].insert \
+      id: id,
+      type: account[:type],
+      private_key: private_key,
+      json: account.to_json
 
-    account
+    account.to_json
   end
 
   private

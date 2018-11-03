@@ -1,8 +1,6 @@
 class FetchStatus
   include JsonLdHelper
 
-  # FRESH_WINDOW = 60 * 60 * 24 * 3
-
   SUPPORTED_TYPES = %w(Note)
 
   def initialize(id)
@@ -12,8 +10,7 @@ class FetchStatus
   def call
     status = fetch_saved
     return status if id.start_with?(BASE_URL)
-    # fetched_at = STORAGE.read(:statusFetches, id).to_i
-    return status if status # && Time.now.to_i - fetched_at <= FRESH_WINDOW
+    return status if status
     status = fetch_by_id
     return unless status
     save_status(status)
@@ -29,13 +26,16 @@ class FetchStatus
   attr_reader :id
 
   def fetch_saved
-    result = STORAGE.read(:statuses, id)
-    LD_CONTEXT.merge(result) if result
+    result = DB[:objects].where(id: id).first
+    LD_CONTEXT.merge(Oj.load(result[:json])) if result
   end
 
-  def save_status(status)
-    STORAGE.write(:statuses, id, status)
-    # STORAGE.write(:statusFetches, id, Time.now.to_i)
+  def save_status(object)
+    DB[:objects].insert \
+      id: object['id'],
+      type: object['type'],
+      published: object['published'],
+      json: object.to_json
   end
 
   def fetch_by_id

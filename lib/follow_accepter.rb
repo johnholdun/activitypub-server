@@ -5,8 +5,8 @@ class FollowAccepter < Service
   attribute :activity
 
   def call
-    account = STORAGE.read(:accounts, account_id)
-    follower = STORAGE.read(:accounts, activity['actor'])
+    account = Oj.load(DB[:actors].where(id: account_id).first[:json])
+    follower = Oj.load(DB[:actors].where(id: activity['actor']).first[:json])
 
     Deliverer.call \
       account,

@@ -11,28 +11,35 @@ class FollowersRoute < Route
 
     page = request.params['page'].to_i
 
-    all_followers = STORAGE.read(:followers, @account['id']) || []
+    followers = DB[:follows].where(object: @account['id'])
+
+    total_followers = followers.size
 
     if page > 0
-      followers = all_followers[(page - 1) * PAGE_SIZE, PAGE_SIZE].to_a
-      followers_next_page = page + 1 if followers.size == PAGE_SIZE
+      followers =
+        followers
+        .limit(PAGE_SIZE + 1)
+        .offset((page - 1) * PAGE_SIZE)
+        .map(:actor)
+
+      followers_next_page = page + 1 if followers.size > PAGE_SIZE
       followers_prev_page = page - 1 if page > 1
 
       finish_json \
         LD_CONTEXT.merge \
           id: account_followers_url(page),
           type: 'OrderedCollectionPage',
-          totalItems: all_followers.size,
+          totalItems: total_followers,
           next: (account_followers_url(followers_next_page) if followers_next_page),
           prev: (account_followers_url(followers_prev_page) if followers_prev_page),
           partOf: account_followers_url,
-          items: followers
+          items: followers[0, PAGE_SIZE]
     else
       finish_json \
         LD_CONTEXT.merge \
           id: account_followers_url,
           type: 'OrderedCollection',
-          totalItems: all_followers.size,
+          totalItems: total_followers,
           first: account_followers_url(1)
     end
   end

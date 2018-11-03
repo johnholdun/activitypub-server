@@ -8,9 +8,11 @@ class FollowCreator < Service
     # TODO: validate uri
     # TODO: check for existing blocks in either direction
 
-    account = STORAGE.read(:accounts, account_id)
+    account = DB[:actors].where(id: account_id).first
 
     raise 'no account' unless account
+
+    account = Oj.load(account[:json])
 
     target = FetchAccount.call(target_account_id)
 

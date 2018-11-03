@@ -65,7 +65,7 @@ class StatusCreator < Service
   private
 
   def account
-    @account ||= STORAGE.read(:accounts, account_id)
+    @account ||= Oj.load(DB[:actors].where(id: account_id).first[:json])
   end
 
   def mentions
@@ -92,8 +92,9 @@ class StatusCreator < Service
       mentions.map { |m| (m['endpoints'] || {})['sharedInbox'] || m['inbox'] }
 
     @inbox_urls +=
-      STORAGE.read(:followers, account['id']).map do |id|
-        follower = STORAGE.read(:accounts, id)
+      DB[:follows].where(object: account['id']).map(:actor).map do |id|
+        follower = DB[:actors].where(id: id).first
+        follower = Oj.load(follower[:json]) if follower
         (follower['endpoints'] || {})['sharedInbox'] || follower['inbox']
       end
 

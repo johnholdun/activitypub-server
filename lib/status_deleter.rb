@@ -7,12 +7,12 @@ class StatusDeleter < Service
   def call
     # TODO: don't delete if status doesn't exist
 
-    account = STORAGE.read(:accounts, account_id)
+    account = DB[:actors].where(id: account_id).first
     status = STORAGE.read(:statuses, status_uri)
 
     raise 'invalid account' unless account
+    account = Oj.load(account)
     raise 'invalid status' unless status
-    puts "lmao #{status['attributedTo']} #{account['id']}"
     raise 'wrong author' unless status['attributedTo'] == account['id']
 
     mentions = status['tag'].map { |t| FetchAccount.call(t['href']) }
@@ -20,8 +20,9 @@ class StatusDeleter < Service
     inbox_urls =
       mentions.map { |m| (m['endpoints'] || {})['sharedInbox'] || m['inbox'] }
     inbox_urls +=
-      STORAGE.read(:followers, account['id']).map do |id|
-        follower = STORAGE.read(:accounts, id)
+      DB[:follows].where(object: account['id']).map(:actor).map do |id|
+        follower = DB[:actors].where(id: id).first
+        follower = Oj.load(follower[:json]) if follower
         (follower['endpoints'] || {})['sharedInbox'] || follower['inbox']
       end
 
