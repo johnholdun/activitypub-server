@@ -5,7 +5,6 @@ class FetchAccount
 
   FRESH_WINDOW = 60 * 60 * 24 * 3
   DFRN_NS = 'http://purl.org/macgirvin/dfrn/1.0'
-  SUPPORTED_TYPES = %w(Application Group Organization Person Service).freeze
 
   def initialize(id)
     @id = id
@@ -56,7 +55,9 @@ class FetchAccount
     return unless supported_context?(json)
 
     supported_type =
-      SUPPORTED_TYPES.any? { |type| equals_or_includes?(json['type'], type) }
+      ActivityPub::ACTOR_TYPES.any? do |type|
+        equals_or_includes?(json['type'], type)
+      end
 
     return unless supported_type
 
@@ -165,6 +166,8 @@ class FetchAccount
 
   def supported?(json)
     return unless supported_context?(json)
-    SUPPORTED_TYPES.any? { |type| equals_or_includes?(json['type'], type) }
+    ActivityPub::ACTOR_TYPES.any? do |type|
+      equals_or_includes?(json['type'], type)
+    end
   end
 end

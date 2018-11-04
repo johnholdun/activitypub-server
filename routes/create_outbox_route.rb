@@ -1,10 +1,15 @@
 class CreateOutboxRoute < Route
   def call
-    # TODO: authentication
     account =
-      FetchAccount.call("#{BASE_URL}/users/#{request.params['username']}")
+      DB[:actors].where(id: "#{BASE_URL}/users/#{request.params['username']}").first
 
     return not_found unless account
+
+    unless request['headers']['Authorization'] == "Bearer #{account[:auth_token]}"
+      return finish('Not authorized', 401)
+    end
+
+    account = Oj.load(account[:json])
 
     request.body.rewind
     body = request.body.read.force_encoding('UTF-8')

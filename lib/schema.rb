@@ -4,6 +4,7 @@ class Schema
       column :id, :string, unique: true
       column :type, :string
       column :private_key, :string
+      column :auth_token, :string
       column :fetched_at, :datetime
       column :json, :json
     end

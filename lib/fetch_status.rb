@@ -1,8 +1,6 @@
 class FetchStatus
   include JsonLdHelper
 
-  SUPPORTED_TYPES = %w(Note)
-
   def initialize(id)
     @id = id
   end
@@ -44,7 +42,9 @@ class FetchStatus
     return unless supported_context?(json)
 
     supported_type =
-      SUPPORTED_TYPES.any? { |type| equals_or_includes?(json['type'], type) }
+      ActivityPub::OBJECT_TYPES.any? do |type|
+        equals_or_includes?(json['type'], type)
+      end
 
     return unless supported_type
 
@@ -80,6 +80,8 @@ class FetchStatus
 
   def supported?(json)
     return unless supported_context?(json)
-    SUPPORTED_TYPES.any? { |type| equals_or_includes?(json['type'], type) }
+    ActivityPub::OBJECT_TYPES.any? do |type|
+      equals_or_includes?(json['type'], type)
+    end
   end
 end

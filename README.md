@@ -48,6 +48,16 @@ Run any of these with the `--help` flag to see the options it accepts:
 rake favorites:create -- --help
 ```
 
+## Adding to the Outbox
+
+Following the standard ActivityPub flow, you can create Notes, Like Objects, and more:
+
+```
+curl -i -X POST -H "Authorization: Bearer exampletoken" -H "Content-Type: application/json" -d '{"type":"Like","object":"https://mastodon.social/users/johnholdun/statuses/1508775"}' https://johnholdun.localtunnel.me/users/john/outbox
+```
+
+If the request works, you'll receive a 201 with a Location header that directs you to your created Activity. In order to deliver this Activity to the relevant parties, you'll need to run the outbox queue.
+
 ## The Queue
 
 The inbox flow for this project is designed to be minimally process-intensive. Any request to an inbox URL will be accepted and written to the `inbox` directory without being parsed. A second process will parse these items one at a time, in the order they were received, saving statuses, accepting follows, and dispatching notifications as appropriate. You can run the parser like so:
@@ -58,20 +68,22 @@ ruby -e "require './environment'; ParseInboxItem.call"
 
 This command will parse the oldest inbox item, delete the file, and exit. If there is a problem parsing the file, it will be moved to the `inbox-errors` directory with error data appended. There's no built-in mechanism for running this parser continuously yet, but a frequent cron job might do the trick. You might also want to run this task in a batch; it will return silently if there is nothing new to parse.
 
-## API
+There's another process for delivering activities that are added to your local outbox. You can have this clear out a batch of outbox items in a similar way to the inbox queue:
 
-There is an API for reading timelines and notifications and creating and deleting statuses, likes, and reblogs. It doesn't have authentication yet.
+```
+ruby -e "require './environment'; ActivityDeliverer.call"
+```
 
 ## To Do
 
 ### Static content
 
-An ActivityPub server is generally more read-heavy than write-heavy. To make this app as performant as possible, I want most GET requests to return static data (i.e. pre-generated JSON files). The biggest piece of work here involves creating slices of feeds that are suitable for pagination.
+The POST /inbox requests _may_ be the most heavily-used routes (which is why they are designed the way they are, to reduce processing time), but GETs require little to no logic. To make this app as performant as possible, I want most GET requests to return static data (i.e. pre-generated JSON files). The biggest piece of work here involves creating slices of feeds that are suitable for pagination.
 
 ### Authentication
 
-The API endpoints are all hard-coded for a local user named `john`. Authentication is out of scope for this project, but maybe adopting [IndieLogin](https://indielogin.com/) makes sense.
+Any outbox POST is just checked against a static string right now. I think adopting [IndieLogin](https://indielogin.com/) makes sense here.
 
 ## Acknowledgements
 
-This codebase started as a fork of [Mastodon](https://github.com/tootsuite/mastodon/), which I stripped away line by line to learn how the ActivityPub spec works in practice. Thanks to Eugen and everyone else that has worked on that project!
+This codebase started as a fork of [Mastodon](https://github.com/tootsuite/mastodon/), which I stripped away line by line to learn how the ActivityPub spec works in practice. It's changed and expanded a lot since then, but I wanted to thank Gargron and everyone else that has worked on that project for pointing me in the right direction!
