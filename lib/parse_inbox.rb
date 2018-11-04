@@ -1,7 +1,9 @@
-class ParseInboxItem
+class ParseInbox
   include JsonLdHelper
 
   def call
+    puts 'Checking queue…'
+
     @payload = DB[:unverified_inbox].where(errors: nil).first
     raise 'no items' unless payload
 
@@ -27,6 +29,9 @@ class ParseInboxItem
     DB[:unverified_inbox]
       .where(id: payload[:id])
       .update(errors: error.to_json)
+  ensure
+    # Unless we hit the end of the queue, run this again
+    self.call if payload
   end
 
   def self.call
@@ -101,7 +106,7 @@ class ParseInboxItem
 
     inbox_params =
       {
-      actor: inbox_account['id'],
+        actor: inbox_account['id'],
         activity: json['id']
       }
 

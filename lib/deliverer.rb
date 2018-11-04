@@ -18,6 +18,7 @@ class Deliverer
           )
           .perform do |response|
             puts "Response from #{inbox_url}:\n#{response.inspect}"
+            puts "~ #{response.body}" unless response.body.to_s.strip.size.zero?
             response.status.code
           end
 

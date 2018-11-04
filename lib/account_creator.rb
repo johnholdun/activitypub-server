@@ -23,14 +23,11 @@ class AccountCreator < Service
         name: display_name,
         summary: summary,
         url: id,
-        manuallyApprovesFollowers: false,
         publicKey: {
           id: "#{id}#main-key",
           owner: id,
           publicKeyPem: public_key
         },
-        tag: [],
-        attachment: [],
         icon: {
           type: 'Image',
           mediaType: 'image/png',

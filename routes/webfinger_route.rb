@@ -27,7 +27,7 @@ class WebfingerRoute < Route
     headers['Cache-Control'] = 'max-age=259200, public'
 
     finish_json \
-      subject: uri,
+      subject: "acct:#{@account['preferredUsername']}@#{LOCAL_DOMAIN}",
       aliases: [@account['id']],
       links: [
         {
@@ -49,7 +49,7 @@ class WebfingerRoute < Route
   end
 
   def private_key
-    actor = DB[:actors].where(id: uri).first
+    actor = DB[:actors].where(id: @account['id']).first
     actor[:private_key] if actor
   end
 

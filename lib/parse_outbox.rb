@@ -1,4 +1,4 @@
-class ActivityDeliverer
+class ParseOutbox
   def self.call
     # TODO: Retry everything in `deliveries` table, delete on success
 
