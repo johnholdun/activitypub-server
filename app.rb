@@ -98,13 +98,8 @@ class ActivityPub < Sinatra::Application
       [:get, '/users/:username/following/?', FollowingRoute],
       [:get, '/users/:username/collections/:id/?', CollectionRoute],
 
-      # TODO: Replace with ReadObjectRoute?
-      [:get, '/users/:username/statuses/:id/?', StatusRoute],
-
       [:get, '/users/:username/activities/:id/?', ReadActivityRoute],
-
-      # TODO: More specific types in URL?
-      [:get, '/users/:username/objects/:id/?', ReadObjectRoute],
+      [:get, '/users/:username/:type/:id/?', ReadObjectRoute]
     ]
 
   @my_routes.each do |meth, path, klass|
