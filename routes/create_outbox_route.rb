@@ -16,7 +16,7 @@ class CreateOutboxRoute < Route
     activity = Oj.load(body, mode: :strict)
     object = activity['object']
 
-    unless ActivityPub::ACTIVITY_TYPES.include?(activity['type'])
+    unless ACTIVITY_TYPES.include?(activity['type'])
       object =
         activity.merge \
           'id' => "#{account['id']}/activities/#{(Time.now.to_f * 1000).round}",

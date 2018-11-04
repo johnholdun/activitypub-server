@@ -42,7 +42,7 @@ class FetchStatus
     return unless supported_context?(json)
 
     supported_type =
-      ActivityPub::OBJECT_TYPES.any? do |type|
+      OBJECT_TYPES.any? do |type|
         equals_or_includes?(json['type'], type)
       end
 
@@ -80,7 +80,7 @@ class FetchStatus
 
   def supported?(json)
     return unless supported_context?(json)
-    ActivityPub::OBJECT_TYPES.any? do |type|
+    OBJECT_TYPES.any? do |type|
       equals_or_includes?(json['type'], type)
     end
   end

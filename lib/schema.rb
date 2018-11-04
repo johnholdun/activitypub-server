@@ -45,5 +45,15 @@ class Schema
       column :object, :string
       column :accepted, :boolean
     end
+
+    DB.create_table?(:unverified_inbox) do
+      primary_key :id
+      column :body, :text
+      column :headers, :json
+      column :path, :string
+      column :request_method, :string
+      column :username, :string
+      column :errors, :json
+    end
   end
 end

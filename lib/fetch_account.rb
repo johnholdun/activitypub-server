@@ -55,7 +55,7 @@ class FetchAccount
     return unless supported_context?(json)
 
     supported_type =
-      ActivityPub::ACTOR_TYPES.any? do |type|
+      ACTOR_TYPES.any? do |type|
         equals_or_includes?(json['type'], type)
       end
 
@@ -166,7 +166,7 @@ class FetchAccount
 
   def supported?(json)
     return unless supported_context?(json)
-    ActivityPub::ACTOR_TYPES.any? do |type|
+    ACTOR_TYPES.any? do |type|
       equals_or_includes?(json['type'], type)
     end
   end

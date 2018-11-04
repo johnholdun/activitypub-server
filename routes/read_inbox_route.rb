@@ -17,7 +17,7 @@ class ReadInboxRoute < Route
     headers['Content-Type'] = 'application/activity+json'
 
     if request.params['page'] == 'true'
-      activities = fetch_activities(request.params.symbolize_keys)
+      activities = fetch_activities(request.params)
 
       next_page =
         if activities.count > LIMIT
@@ -75,10 +75,10 @@ class ReadInboxRoute < Route
   def fetch_activities(params)
     query = all_activities.limit(LIMIT + 1)
 
-    if params[:min_id]
-      query = query.where { id >= params[:min_id] }
-    elsif params[:max_id]
-      query = query.where { id <= params[:max_id] }
+    if params['min_id']
+      query = query.where { id >= params['min_id'] }
+    elsif params['max_id']
+      query = query.where { id <= params['max_id'] }
     end
 
     query.to_a

@@ -2,31 +2,31 @@ class ParseInboxItem
   include JsonLdHelper
 
   def call
-    key = STORAGE.read(:unverifiedInbox).keys.first
-    raise 'no items' unless key
-    @payload = STORAGE.read(:unverifiedInbox, key)
+    @payload = DB[:unverified_inbox].where(errors: nil).first
+    raise 'no items' unless payload
 
     inbox_account =
-      FetchAccount.call("#{BASE_URL}/users/#{payload['username']}")
+      FetchAccount.call("#{BASE_URL}/users/#{payload[:username]}")
 
     raise 'user not found' unless inbox_account
 
     process \
       inbox_account,
-      payload['body'],
+      payload[:body],
       signed_request_account
+
+    DB[:unverified_inbox]
+      .where(id: payload[:id])
+      .delete
   rescue => error
-    unless key
+    unless payload
       puts 'no items in queue'
       return
     end
 
-    STORAGE.write \
-      :inboxErrors,
-      key,
-      payload.merge(error: error).to_json
-  ensure
-    STORAGE.delete(:unverifiedInbox, key)
+    DB[:unverified_inbox]
+      .where(id: payload[:id])
+      .update(errors: error.to_json)
   end
 
   def self.call
@@ -36,6 +36,10 @@ class ParseInboxItem
   private
 
   attr_reader :payload
+
+  def headers
+    @headers ||= Oj.load(payload[:headers]) rescue {}
+  end
 
   def process(inbox_account, body, account)
     json = Oj.load(body, mode: :strict)
@@ -76,18 +80,33 @@ class ParseInboxItem
       json['object'] = object['id']
     end
 
-    DB[:activities].insert \
-      id: json['id'],
-      type: json['type'],
-      actor: json['actor'],
-      object: json['object'],
-      target: json['target'],
-      published: json['published'],
-      json: json.reject { |k, _| %w(@context signature).include?(k) }.to_json
+    params =
+      {
+        id: json['id'],
+        type: json['type'],
+        actor: json['actor'],
+        object: json['object'],
+        target: json['target'],
+        published: json['published'],
+        json: json.reject { |k, _| %w(@context signature).include?(k) }.to_json
+      }
 
-    DB[:inbox].insert \
+    existing = DB[:activities].where(id: params[:id])
+
+    if existing.count > 0
+      existing.update(params)
+    else
+      DB[:activities].insert(params)
+    end
+
+    inbox_params =
+      {
       actor: inbox_account['id'],
-      activity: json['id']
+        activity: json['id']
+      }
+
+    DB[:inbox].where(inbox_params).delete
+    DB[:inbox].insert(inbox_params)
 
     items =
       case json['type']
@@ -113,10 +132,10 @@ class ParseInboxItem
   end
 
   def signed_request_account
-    raise 'Request not signed' unless payload['headers']['Signature'].to_s.size > 0
+    raise 'Request not signed' unless headers['Signature'].to_s.size > 0
 
     # begin
-    #   time_sent = DateTime.httpdate(payload['headers']['Date'])
+    #   time_sent = DateTime.httpdate(headers['Date'])
     # rescue ArgumentError
     #   raise 'Invalid date'
     # end
@@ -127,7 +146,7 @@ class ParseInboxItem
 
     signature_params = {}
 
-    payload['headers']['Signature'].split(',').each do |part|
+    headers['Signature'].split(',').each do |part|
       parsed_parts = part.match(/([a-z]+)="([^"]+)"/i)
       next if parsed_parts.nil? || parsed_parts.size != 3
       signature_params[parsed_parts[1]] = parsed_parts[2]
@@ -150,12 +169,12 @@ class ParseInboxItem
       .split(' ')
       .map do |signed_header|
         if signed_header == Request::REQUEST_TARGET
-          "#{Request::REQUEST_TARGET}: #{payload['request_method']} #{payload['path']}"
+          "#{Request::REQUEST_TARGET}: #{payload[:request_method]} #{payload[:path]}"
         elsif signed_header == 'digest'
-          "digest: SHA-256=#{Digest::SHA256.base64digest(payload['body'])}"
+          "digest: SHA-256=#{Digest::SHA256.base64digest(payload[:body])}"
         else
           header =
-            payload['headers'][signed_header.split(/-/).map(&:capitalize).join('-')]
+            headers[signed_header.split(/-/).map(&:capitalize).join('-')]
 
           "#{signed_header}: #{header}"
         end
