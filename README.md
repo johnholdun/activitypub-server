@@ -27,25 +27,10 @@ There’s a command line script for this:
 rake accounts:create -- --username john --display-name "John Holdun" --summary "Greetings from me" --icon-url "https://johnholdun.com/images/bookworm-full.png"
 ```
 
-Fill in your own options to create a new account on your server. The icon needs to already exist at the URL you specify; this server does not handle media uploads.
-
-There are similar tasks for other actions you can perform on behalf of accounts on your server:
+Fill in your own options to create a new account on your server. The icon needs to already exist at the URL you specify; this server does not handle media uploads. You can also add the `--help` flag to see the options this command accepts:
 
 ```
-favorites:create
-favorites:delete
-follows:create
-follows:delete
-reblogs:create
-reblogs:delete
-statuses:create
-statuses:delete
-```
-
-Run any of these with the `--help` flag to see the options it accepts:
-
-```
-rake favorites:create -- --help
+rake accounts:create -- --help
 ```
 
 ## Adding to the Outbox
@@ -57,6 +42,17 @@ curl -i -X POST -H "Authorization: Bearer exampletoken" -H "Content-Type: applic
 ```
 
 If the request works, you'll receive a 201 with a Location header that directs you to your created Activity. In order to deliver this Activity to the relevant parties, you'll need to run the outbox queue.
+
+### Addressing your audience
+
+The outbox makes no assumptions about who you want to notify about your creations. If you don't specify `to` or `cc` fields, it won't be sent to anyone! Here are some recommendations for who to send to, by type of object:
+
+- Like: to author of liked object
+- Follow: to target
+- Note: to public, cc followers and anyone tagged and author of reply, if applicable
+- Announce: to public, cc followers and author of object being announced
+
+An Undo should generally be sent to the same audience as the activity it's undoing.
 
 ## The Queue
 

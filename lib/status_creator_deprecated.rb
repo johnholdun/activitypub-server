@@ -1,6 +1,9 @@
 require './lib/service'
 
-class StatusCreator < Service
+# I'm keeping this around for now because it's very complicated and a lot of it
+# will probably be re-added to the project eventually, but for now it is dead
+# code.
+class StatusCreatorDeprecated < Service
   USERNAME_RE = /[a-z0-9_]+([a-z0-9_\.]+[a-z0-9_]+)?/i.freeze
 
   MENTION_RE =
