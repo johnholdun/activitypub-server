@@ -35,7 +35,7 @@ rake accounts:create -- --help
 
 ## Adding to the Outbox
 
-Following the standard ActivityPub flow, you can create Notes, Like Objects, and more:
+Following the standard ActivityPub flow, you can `Create` `Note`s, `Follow` `Person`s, and more:
 
 ```
 curl -i -X POST -H "Authorization: Bearer exampletoken" -H "Content-Type: application/json" -d '{"type":"Like","object":"https://mastodon.social/users/johnholdun/statuses/1508775"}' https://johnholdun.localtunnel.me/users/john/outbox
@@ -62,7 +62,7 @@ The inbox flow for this project is designed to be minimally process-intensive. A
 ruby -e "require './environment'; ParseInbox.call"
 ```
 
-This command will parse all new activities and exit. If there is a problem parsing an activity, its `errros` column will be populated with helpful information; this item will be ignored on subsequent runs and manual intervention will be required. There's no built-in mechanism for running this parser continuously yet, but a frequent cron job might do the trick.
+This command will parse all new activities and exit. If there is a problem parsing an activity, its `errors` column will be populated with helpful information; this item will be ignored on subsequent runs and manual intervention will be required. There's no built-in mechanism for running this parser continuously yet, but a frequent cron job might do the trick.
 
 There's another process for delivering activities that are added to your local outbox. You can have this clear out a batch of outbox items in a similar way to the inbox queue:
 
