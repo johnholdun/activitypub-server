@@ -14,13 +14,13 @@ class OutboxRoute < Route
       statuses = all_statuses.to_a
 
       next_page =
-        if statuses.size == LIMIT
-          account_outbox_url(page: true, max_id: statuses.last['id'])
+        if statuses.count == LIMIT
+          account_outbox_url(page: true, max_id: URI.escape(statuses.last[:id]))
         end
 
       prev_page =
-        unless statuses.size == 0
-          account_outbox_url(page: true, min_id: statuses.first['id'])
+        unless statuses.count == 0
+          account_outbox_url(page: true, min_id: URI.escape(statuses.first[:id]))
         end
 
       id_url_params =
@@ -34,17 +34,17 @@ class OutboxRoute < Route
         LD_CONTEXT.merge \
           id: account_outbox_url(id_url_params),
           type: 'OrderedCollectionPage',
-          totalItems: all_statuses.size,
+          totalItems: all_statuses.count,
           next: next_page,
           prev: prev_page,
           partOf: account_outbox_url,
-          orderedItems: statuses
+          orderedItems: statuses.map { |s| Oj.load(s[:json]) }
     else
       finish_json \
         LD_CONTEXT.merge \
           id: account_outbox_url,
           type: 'CollectionPage',
-          totalItems: all_statuses.size,
+          totalItems: all_statuses.count,
           first: account_outbox_url(page: true),
           last: account_outbox_url(page: true, min_id: 0)
     end

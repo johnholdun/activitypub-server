@@ -13,7 +13,7 @@ class FollowersRoute < Route
 
     followers = DB[:follows].where(object: @account['id'])
 
-    total_followers = followers.size
+    total_followers = followers.count
 
     if page > 0
       followers =
@@ -22,7 +22,7 @@ class FollowersRoute < Route
         .offset((page - 1) * PAGE_SIZE)
         .map(:actor)
 
-      followers_next_page = page + 1 if followers.size > PAGE_SIZE
+      followers_next_page = page + 1 if followers.count > PAGE_SIZE
       followers_prev_page = page - 1 if page > 1
 
       finish_json \

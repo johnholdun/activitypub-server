@@ -13,7 +13,7 @@ class FollowingRoute < Route
 
     following = DB[:follows].where(actor: @account['id'])
 
-    total_following = following.size
+    total_following = following.count
 
     if page > 0
       following =
@@ -22,7 +22,7 @@ class FollowingRoute < Route
         .offset((page - 1) * PAGE_SIZE)
         .map(:object)
 
-      following_next_page = page + 1 if following.size > PAGE_SIZE
+      following_next_page = page + 1 if following.count > PAGE_SIZE
       following_prev_page = page - 1 if page > 1
 
       finish_json \

@@ -2,18 +2,25 @@ class WebfingerRoute < Route
   def call
     resource = request.params['resource']
 
-    @account =
+    uri =
       case resource
       when /\A#{BASE_URL}/i
-        FetchAccount.call(resource)
+        resource
       when /\@/
         username, domain = resource.gsub(/\Aacct:/, '').split('@', 2)
+
         if domain.gsub(/\//, '').casecmp(LOCAL_DOMAIN).zero?
-          FetchAccount.call("#{BASE_URL}/users/#{username}")
+          "#{BASE_URL}/users/#{username}"
         end
       end
 
+    return not_found unless uri
+
+    @account = DB[:actors].where(id: uri).first
+
     return not_found unless @account
+
+    @account = Oj.load(@account[:json])
 
     headers['Vary'] = 'Accept'
     headers['Content-Type'] = 'application/jrd+json'

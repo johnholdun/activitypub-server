@@ -2,12 +2,17 @@ class ReadInboxRoute < Route
   LIMIT = 20
 
   def call
-    # TODO: Authentication
-
     @account =
-      FetchAccount.call("#{BASE_URL}/users/#{request.params['username']}")
+      DB[:actors].where(id: "#{BASE_URL}/users/#{request.params['username']}").first
 
     return not_found unless @account
+
+    unless request['headers']['Authorization'] == "Bearer #{@account[:auth_token]}"
+      return finish('Not authorized', 401)
+    end
+
+    @account = Oj.load(@account[:json])
+
 
     headers['Content-Type'] = 'application/activity+json'
 
@@ -15,12 +20,12 @@ class ReadInboxRoute < Route
       activities = fetch_activities(request.params.symbolize_keys)
 
       next_page =
-        if activities.size > LIMIT
+        if activities.count > LIMIT
           account_inbox_url(page: true, min_id: activities[-2]['id'])
         end
 
       prev_page =
-        unless activities.size == 0
+        unless activities.count == 0
           account_inbox_url(page: true, max_id: activities.first['id'])
         end
 
@@ -36,7 +41,7 @@ class ReadInboxRoute < Route
         LD_CONTEXT.merge \
           id: account_inbox_url(id_url_params),
           type: 'OrderedCollectionPage',
-          totalItems: all_activities.size,
+          totalItems: all_activities.count,
           next: next_page,
           prev: prev_page,
           partOf: account_inbox_url,
@@ -46,7 +51,7 @@ class ReadInboxRoute < Route
         LD_CONTEXT.merge \
           id: account_inbox_url,
           type: 'CollectionPage',
-          totalItems: all_activities.size,
+          totalItems: all_activities.count,
           first: account_inbox_url(page: true),
           last: account_inbox_url(page: true, min_id: 0)
     end
