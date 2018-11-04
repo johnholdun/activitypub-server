@@ -14,7 +14,7 @@ class FetchAccount
   def call
     account = fetch_saved
     return account if id.start_with?(BASE_URL)
-    return account if account && Time.now.to_i - account[:fetched_at] <= FRESH_WINDOW
+    return account if account && Time.now.to_i - account[:fetched_at].to_i <= FRESH_WINDOW
     account = fetch_webfinger || fetch_by_id
     return unless account
     save_account(account)

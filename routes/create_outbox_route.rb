@@ -14,31 +14,30 @@ class CreateOutboxRoute < Route
     unless ActivityPub::ACTIVITY_TYPES.include?(activity['type'])
       object =
         activity.merge \
-          'id' => "#{account['id']}/create/TODO/#{Time.now.to_i}",
-          'attributedTo' => account['id'],
-          'published' => Time.now.utc.iso8601
+          'id' => "#{account['id']}/activities/#{(Time.now.to_f * 1000).round}",
+          'attributedTo' => account['id']
 
       activity =
         {
           '@context' => 'https://www.w3.org/ns/activitystreams',
           'type' => 'Create',
-          'id' => "#{account['id']}/create/TODO/#{Time.now.to_i}",
+          'id' => "#{account['id']}/create/TODO/#{(Time.now.to_f * 1000).round}",
           'actor' => account['id'],
           'object' => object,
-          'published' => Time.now.utc.iso8601,
           'to' => activity['to'],
           'cc' => activity['cc']
         }
     end
 
-    timestamp = Time.now.to_i
-    activity['id'] = "#{account['id']}/activities/TODO-#{activity['type']}-#{timestamp}"
+    timestamp = (Time.now.to_f * 1000).round
+    activity['id'] = "#{account['id']}/activities/#{timestamp}"
+
+    activity['published'] = Time.now.utc.iso8601
 
     if activity['type'] == 'Create'
-      object['id'] = "#{account['id']}/objects/TODO-#{object['type']}-#{timestamp}"
+      object['published'] = activity['published']
+      object['id'] = "#{account['id']}/#{object['type']}/#{timestamp}"
     end
-
-    # TODO: Ensure activity has published attribute
 
     # TODO: fetch object if not owned by this origin
     if object.is_a?(Hash)
@@ -57,6 +56,8 @@ class CreateOutboxRoute < Route
 
       activity['object'] = object['id']
     end
+
+    activity['actor'] = account['id']
 
     DB[:activities].insert \
       id: activity['id'],

@@ -6,18 +6,22 @@ class Deliverer
   end
 
   def call
-    inbox_urls.each do |inbox_url|
-      Request
-        .new(
-          :post,
-          inbox_url,
-          body: json,
-          headers: { 'Content-Type' => 'application/activity+json' },
-          account: account
-        )
-        .perform do |response|
-          puts "Response from #{inbox_url}:\n#{response.inspect}"
-        end
+    inbox_urls.map do |inbox_url|
+      response =
+        Request
+          .new(
+            :post,
+            inbox_url,
+            body: json,
+            headers: { 'Content-Type' => 'application/activity+json' },
+            account: account
+          )
+          .perform do |response|
+            puts "Response from #{inbox_url}:\n#{response.inspect}"
+            response.status.code
+          end
+
+      { inbox_url: inbox_url, response: response }
     end
   end
 
