@@ -41,7 +41,7 @@ class CreateOutboxRoute < Route
 
     if activity['type'] == 'Create'
       object['published'] = activity['published']
-      object['id'] = "#{account['id']}/#{object['type']}/#{timestamp}"
+      object['id'] = "#{account['id']}/#{TYPE_PARAMS[object['type']]}/#{timestamp}"
     end
 
     # TODO: fetch object if not owned by this origin
@@ -49,7 +49,7 @@ class CreateOutboxRoute < Route
       existing = DB[:objects].where(id: object['id'])
 
       if existing.count > 0
-        new_json = existing.first[:json].merge(object).reject { |_, v| v.nil? }
+        new_json = Oj.load(existing.first[:json]).merge(object).reject { |_, v| v.nil? }
         existing.update(json: new_json.to_json)
       else
         DB[:objects].insert \
