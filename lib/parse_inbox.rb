@@ -1,3 +1,5 @@
+require './lib/jsonld_helper'
+
 class ParseInbox
   include JsonLdHelper
 
