@@ -1,20 +1,4 @@
 class ReadObjectRoute < Route
-  # This is every member of OBJECT_TYPES except Tombstone
-  TYPE_PARAMS =
-    {
-      'Article' => 'articles',
-      'Audio' => 'audio',
-      'Document' => 'documents',
-      'Event' => 'events',
-      'Image' => 'images',
-      'Note' => 'notes',
-      'Page' => 'pages',
-      'Place' => 'places',
-      'Profile' => 'profiles',
-      'Relationship' => 'relationships',
-      'Video' => 'videos'
-    }.freeze
-
   def call
     # TODO: check audience, authentication?
     id =
