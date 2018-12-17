@@ -29,10 +29,14 @@ First, set up a `proxy_pass` at a path that's unlikely to be shared by any other
       proxy_pass http://localhost:8080/;
     }
 
-Then, in **inside your existing `location /` directive**, add a conditional rewrite before everything else:
+Then, in **inside your existing `location /` directive**, add some conditional rewrites before everything else:
 
     location / {
-      if ($http_accept = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"') {
+      if ($http_accept ~ application\/ld\+json) {
+        rewrite ^/(.+) /activitypub/$1 last;
+      }
+
+      if ($http_content_type ~ activity\+json) {
         rewrite ^/(.+) /activitypub/$1 last;
       }
 
