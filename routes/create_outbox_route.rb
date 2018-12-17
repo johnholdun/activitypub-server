@@ -1,4 +1,22 @@
 class CreateOutboxRoute < Route
+  # To create activities, make a POST to an actor's outbox URL (by default, this
+  # is the ID of the actor plus `/outbox`.)
+  #
+  # Your Authorization header should be of the form "Bearer AUTH_TOKEN", where
+  # `AUTH_TOKEN` is the literal value of the specified actor's auth_token
+  # parameter. You should also send a Content-Type Header of `activity+json`.
+  #
+  # The body of your request should be a JSON object that conforms to the
+  # ActivityStreams spec. You can omit the "Create" type wrapper if you are
+  # sending an Object type (i.e. a Note).
+  #
+  # The simplest, minimal request body for creating a Note is as follows:
+  #
+  #     {
+  #       "type": "Note",
+  #       "to": ["https://www.w3.org/ns/activitystreams#Public"],
+  #       "content": "Hello world"
+  #     }
   def call
     account =
       DB[:actors].where(id: "#{BASE_URL}/users/#{request.params['username']}").first
