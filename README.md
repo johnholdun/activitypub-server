@@ -17,7 +17,31 @@ Then you're ready for this:
 bundle exec unicorn
 ```
 
-The server will start running on port 8080, and you're ready to expose it to the web with something like nginx. Describing that process is outside of the scope of this readme, but [this guide](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-rails-app-with-unicorn-and-nginx-on-ubuntu-14-04#install-and-configure-nginx) should get you going in the right direction.
+The server will start running on port 8080, and you're ready to expose it to the web with something like nginx.
+
+## Sample nginx configuration
+
+Let's assume you have an existing site that's already happily being served with nginx. This app is designed to only handle incoming requests with the activitystreams Accept header, so it can live right alongside your site and even share some URLs if necessary.
+
+First, set up a `proxy_pass` at a path that's unlikely to be shared by any other pages on your site that points to wherever this app is running (port 8080 is the Unicorn default):
+
+    location /activitypub/ {
+      proxy_pass http://localhost:8080/;
+    }
+
+Then, in **inside your existing `location /` directive**, add a conditional rewrite before everything else:
+
+    location / {
+      if ($http_accept = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"') {
+        rewrite ^/(.+) /activitypub/$1 last;
+      }
+
+      # the rest of your existing `location /` directive would be here
+    }
+
+Now reload your config and see if it worked! Happy content negotiating!
+
+For more on nginx, [this guide](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-rails-app-with-unicorn-and-nginx-on-ubuntu-14-04#install-and-configure-nginx) should get you going in the right direction.
 
 ## Creating an Account
 
