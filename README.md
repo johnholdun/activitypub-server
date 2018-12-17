@@ -39,6 +39,12 @@ Then, in **inside your existing `location /` directive**, add a conditional rewr
       # the rest of your existing `location /` directive would be here
     }
 
+You probably want to redirect requests whose path start with `.well-known/` to this app as well, although you may have other software serving data at paths like that. (If you do, you probably already know how to patch this into your existing processes.)
+
+   location /.well-known/ {
+      rewrite ^/(.+) /activitypub/$1 last;
+    }
+
 Now reload your config and see if it worked! Happy content negotiating!
 
 For more on nginx, [this guide](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-rails-app-with-unicorn-and-nginx-on-ubuntu-14-04#install-and-configure-nginx) should get you going in the right direction.
