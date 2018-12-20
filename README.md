@@ -93,7 +93,7 @@ An Undo should generally be sent to the same audience as the activity it's undoi
 The inbox flow for this project is designed to be minimally process-intensive. Any request to an inbox URL will be accepted and written to the `unverified_inbox` table without being parsed. A second process will parse these items one at a time, in the order they were received, saving activities and accepting follows as appropriate. You can run the parser like so:
 
 ```
-ruby -e "require './environment'; ParseInbox.call"
+rake inbox:parse
 ```
 
 This command will parse all new activities and exit. If there is a problem parsing an activity, its `errors` column will be populated with helpful information; this item will be ignored on subsequent runs and manual intervention will be required. There's no built-in mechanism for running this parser continuously yet, but a frequent cron job might do the trick.
@@ -101,7 +101,7 @@ This command will parse all new activities and exit. If there is a problem parsi
 There's another process for delivering activities that are added to your local outbox. You can have this clear out a batch of outbox items in a similar way to the inbox queue:
 
 ```
-ruby -e "require './environment'; ParseOutbox.call"
+rake outbox:parse
 ```
 
 ## To Do
