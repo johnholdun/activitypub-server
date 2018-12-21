@@ -10,7 +10,7 @@ class FollowAccepter < Service
 
     Deliverer.call \
       account,
-      [follower['inbox']],
+      follower['inbox'],
       id: nil,
       type: 'Accept',
       actor: account['id'],
