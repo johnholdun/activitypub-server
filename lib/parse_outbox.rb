@@ -13,6 +13,13 @@ class ParseOutbox
       puts "#{a[:id]}…"
       json = Oj.load(a[:json])
       next unless json['to']
+
+      if json['object'].is_a?(String) && json['object'].start_with?(BASE_URL)
+        json['object'] =
+          Oj.load(DB[:objects].where(id: json['object']).first[:json])
+      end
+
+
       account = DB[:actors].where(id: a[:actor]).first
       account_json = Oj.load(account[:json])
 
