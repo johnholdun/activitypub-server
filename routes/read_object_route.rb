@@ -6,7 +6,7 @@ class ReadObjectRoute < Route
         BASE_URL,
         'users',
         request.params['username'],
-        TYPE_PARAMS[request.params['type']],
+        request.params['type'],
         request.params['id']
       ]
         .join('/')
@@ -20,7 +20,7 @@ class ReadObjectRoute < Route
     finish_json \
       LD_CONTEXT.merge \
         Oj
-          .parse(object[:json])
+          .load(object[:json])
           .reject { |k, _| %w(bto bcc).include?(k) }
   end
 end
