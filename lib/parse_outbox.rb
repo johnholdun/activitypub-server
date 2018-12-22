@@ -15,10 +15,13 @@ class ParseOutbox
       next unless json['to']
 
       if json['object'].is_a?(String) && json['object'].start_with?(BASE_URL)
-        json['object'] =
-          Oj.load(DB[:objects].where(id: json['object']).first[:json])
+        object = DB[:objects].where(id: json['object']).first
+        if object.is_a?(Hash)
+          json['object'] = Oj.load(object[:json])
+        else
+          puts "Could not find object #{json['object']}"
+        end
       end
-
 
       account = DB[:actors].where(id: a[:actor]).first
       account_json = Oj.load(account[:json])
