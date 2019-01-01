@@ -13,6 +13,7 @@ class OutboxRoute < Route
       # TODO: filter by min_id, max_id, since_id, and limit
       statuses = all_statuses.to_a
 
+      # TODO: Use cursors (like {ReadInboxRoute})
       next_page =
         if statuses.count == LIMIT
           account_outbox_url(page: true, max_id: URI.escape(statuses.last[:id]))

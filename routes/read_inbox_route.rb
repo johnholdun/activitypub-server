@@ -15,34 +15,37 @@ class ReadInboxRoute < Route
 
     headers['Content-Type'] = 'application/activity+json'
 
-    if request.params['page'] == 'true'
+    if request.params['cursor']
       activities = fetch_activities(request.params)
 
-      next_page =
-        if activities.count > LIMIT
-          account_inbox_url(page: true, min_id: activities[-2]['id'])
+      min_cursor = all_activities.order(:id).select(:id).first[:id]
+      max_cursor = all_activities.reverse(:id).select(:id).first[:id]
+
+      next_cursor =
+        if activities.size > 0
+          if activities.first[:id] < max_cursor
+            activities.first[:id]
+          end
+        elsif request.params['cursor'] =~ /^-/
+          request.params['cursor'].to_i.abs
         end
 
-      prev_page =
-        unless activities.count == 0
-          account_inbox_url(page: true, max_id: activities.first['id'])
+      prev_cursor =
+        if activities.size > 0
+          if activities.last[:id] > min_cursor
+            "-#{activities.last[:id]}"
+          end
+        elsif request.params['cursor'] !~ /^-/
+          "-#{request.params['cursor'].to_i}"
         end
-
-      # TODO: Use cursors instead of IDs
-      id_url_params =
-        {
-          page: true,
-          max_id: request.params['max_id'],
-          min_id: request.params['min_id']
-        }.compact
 
       finish_json \
         LD_CONTEXT.merge \
-          id: account_inbox_url(id_url_params),
+          id: account_inbox_url(cursor: request.params['cursor']),
           type: 'OrderedCollectionPage',
           totalItems: all_activities.count,
-          next: next_page,
-          prev: prev_page,
+          next: (account_inbox_url(cursor: next_cursor) if next_cursor),
+          prev: (account_inbox_url(cursor: prev_cursor) if prev_cursor),
           partOf: account_inbox_url,
           orderedItems: items(activities)
     else
@@ -51,8 +54,8 @@ class ReadInboxRoute < Route
           id: account_inbox_url,
           type: 'CollectionPage',
           totalItems: all_activities.count,
-          first: account_inbox_url(page: true),
-          last: account_inbox_url(page: true, min_id: 0)
+          first: account_inbox_url(cursor: '0'),
+          last: account_inbox_url(cursor: '-0')
     end
   end
 
@@ -68,19 +71,25 @@ class ReadInboxRoute < Route
   end
 
   def all_activities
-    @all_activities ||= DB[:inbox].where(actor: @account['id']).reverse(:id)
+    @all_activities ||= DB[:inbox].where(actor: @account['id'])
   end
 
   def fetch_activities(params)
-    query = all_activities.limit(LIMIT + 1)
+    query = all_activities.limit(LIMIT)
 
-    if params['min_id']
-      query = query.where { id >= params['min_id'] }
-    elsif params['max_id']
-      query = query.where { id <= params['max_id'] }
+    cursor = params['cursor']
+
+    if cursor == '0'
+      query = query.order(:id)
+    elsif cursor == '-0'
+      query = query.reverse(:id)
+    elsif cursor =~ /^-/
+      query = query.reverse(:id).where { id < cursor.to_i.abs }
+    else
+      query = query.order(:id).where { id > cursor.to_i }
     end
 
-    query.to_a
+    query.to_a.sort_by { |a| a[:id] }.reverse
   end
 
   def items(inbox)
